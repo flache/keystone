@@ -55,7 +55,7 @@ var Footer = React.createClass({
 					>
 						KeystoneJS
 					</a>
-					<span> version {version}.</span>
+					<span> version {version}, adapted by CareerPartner.</span>
 					{this.renderUser()}
 				</Container>
 			</footer>
