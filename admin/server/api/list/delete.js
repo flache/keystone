@@ -1,4 +1,5 @@
 var async = require('async');
+const { getPermissions } = require('../../../../lib/acl');
 
 module.exports = function (req, res) {
 	var keystone = req.keystone;
@@ -9,6 +10,11 @@ module.exports = function (req, res) {
 	if (req.list.get('nodelete')) {
 		console.log('Refusing to delete ' + req.list.key + ' items; List.nodelete is true');
 		return res.apiError(400, 'nodelete');
+	}
+	const permissions = getPermissions(req.acl, req.list);
+	if (!permissions.delete.$any) {
+		console.log('Refusing to delete ' + req.list.key + '.');
+		return res.apiError(403, 'No permission to delete');
 	}
 	var ids = req.body.ids || req.body.id || req.params.id;
 	if (typeof ids === 'string') {

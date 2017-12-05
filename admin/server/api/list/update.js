@@ -3,11 +3,23 @@ TODO: Needs Review and Spec
 */
 
 var async = require('async');
+const { getPermissions } = require('../../../../lib/acl');
 
 module.exports = function (req, res) {
 	var keystone = req.keystone;
 	if (!keystone.security.csrf.validate(req)) {
 		return res.apiError(403, 'invalid csrf');
+	}
+	const permissions = getPermissions(req.acl, req.list);
+	if (!permissions.update.$any) {
+		return res.apiError(403, 'Update not allowed');
+	} else if (!permissions.update.$all) {
+		req.body.items.forEach(dats => {
+			const fields = Object.keys(dats);
+			if (fields.some(inputField => permissions.update.$fields.indexOf(inputField) === -1)) {
+				return res.apiError(403, 'Update not allowed for some fields');
+			}
+		});
 	}
 	// var updateCount = 0;
 	async.map(req.body.items, function (data, done) {

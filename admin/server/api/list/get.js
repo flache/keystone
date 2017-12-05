@@ -1,8 +1,13 @@
 var async = require('async');
 var assign = require('object-assign');
 var listToArray = require('list-to-array');
+const { getPermissions } = require('../../../../lib/acl');
 
 module.exports = function (req, res) {
+	const permissions = getPermissions(req.acl, req.list);
+	if (!permissions.read.$any) {
+		return res.apiError(403, 'No permission to read this list');
+	}
 	var where = {};
 	var fields = req.query.fields;
 	var includeCount = req.query.count !== 'false';
@@ -16,6 +21,13 @@ module.exports = function (req, res) {
 		}
 		if (fields && !Array.isArray(fields)) {
 			return res.status(401).json({ error: 'fields must be undefined, a string, or an array' });
+		}
+	}
+	if (!permissions.read.$all) {
+		if (fields) {
+			fields = fields.filter(f => permissions.read.$fields.indexOf(f) !== -1);
+		} else {
+			fields = permissions.read.$fields;
 		}
 	}
 	var filters = req.query.filters;

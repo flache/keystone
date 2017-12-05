@@ -4,10 +4,28 @@ TODO: Needs Review and Spec
 
 var moment = require('moment');
 var assign = require('object-assign');
+const listToArray = require('list-to-array');
+const { getPermissions } = require('../../../../lib/acl');
+
 
 module.exports = function (req, res, next) {
 	var baby = require('babyparse');
 	var keystone = req.keystone;
+
+	const permissions = getPermissions(req.acl, req.list);
+	if (!permissions.read.$any) {
+		return res.apiError(403, 'No permission to read this list');
+	}
+	let select = req.query.select;
+	if (!permissions.read.$all) {
+		let selectArr = listToArray(req.query.select);
+		if (selectArr.length > 0) {
+			selectArr = selectArr.filter(f => permissions.read.$fields.indexOf(f) !== -1);
+		} else {
+			selectArr = permissions.read.$fields;
+		}
+		select = selectArr.join(',');
+	}
 
 	var format = req.params.format.split('.')[1]; // json or csv
 	var where = {};
@@ -41,7 +59,7 @@ module.exports = function (req, res, next) {
 			data = results.map(function (item) {
 				var row = req.list.getCSVData(item, {
 					expandRelationshipFields: req.query.expandRelationshipFields,
-					fields: req.query.select,
+					fields: select,
 					user: req.user,
 				});
 				// If nested values in the first item aren't present, babyparse

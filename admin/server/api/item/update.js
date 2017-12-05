@@ -1,8 +1,21 @@
+const { getPermissions } = require('../../../../lib/acl');
+
 module.exports = function (req, res) {
 	var keystone = req.keystone;
 	if (!keystone.security.csrf.validate(req)) {
 		return res.apiError(403, 'invalid csrf');
 	}
+	const permissions = getPermissions(req.acl, req.list);
+	if (!permissions.update.$any) {
+		return res.apiError(403, 'Update not allowed');
+	} else if (!permissions.update.$all) {
+		const fields = Object.keys(req.body);
+		if (fields.some(inputField => permissions.update.$fields.indexOf(inputField) === -1)) {
+			return res.apiError(403, 'Update not allowed for some fields');
+		}
+	}
+
+
 	req.list.model.findById(req.params.id, function (err, item) {
 		if (err) return res.status(500).json({ error: 'database error', detail: err });
 		if (!item) return res.status(404).json({ error: 'not found', id: req.params.id });
