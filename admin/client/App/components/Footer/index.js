@@ -15,18 +15,17 @@ var Footer = React.createClass({
 		backUrl: React.PropTypes.string,
 		brand: React.PropTypes.string,
 		user: React.PropTypes.object,
-		User: React.PropTypes.object, // eslint-disable-line react/sort-prop-types
 		version: React.PropTypes.string,
 	},
 	// Render the user
 	renderUser () {
-		const { User, user } = this.props;
+		const { user } = this.props;
 		if (!user) return null;
 
 		return (
 			<span>
 				<span> Signed in as </span>
-				<a href={`${Keystone.adminPath}/${User.path}/${user.id}`} tabIndex="-1" className={css(classes.link)}>
+				<a href={`${Keystone.adminPath}/${user.id}`} tabIndex="-1" className={css(classes.link)}>
 					{user.name}
 				</a>
 				<span>.</span>

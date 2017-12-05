@@ -81,7 +81,6 @@ const App = (props) => {
 				appversion={Keystone.appversion}
 				backUrl={Keystone.backUrl}
 				brand={Keystone.brand}
-				User={Keystone.User}
 				user={Keystone.user}
 				version={Keystone.version}
 			/>
