@@ -184,7 +184,7 @@ var EditForm = React.createClass({
 					</div>
 				</div>
 			);
-		} else if (list.nameField) {
+		} else {
 			return (
 				<div className={className}>
 					<span className="EditForm__key-or-id__label">ID: </span>
@@ -203,7 +203,9 @@ var EditForm = React.createClass({
 				{field}
 			</div>
 		);
-		if (nameFieldIsFormHeader) {
+		const { $any, $all, $fields } = this.props.list.can.update;
+		const readonly = !$all && (!$any || (nameField && $fields.indexOf(nameField.path) === -1));
+		if (nameFieldIsFormHeader && !readonly) {
 			var nameFieldProps = this.getFieldProps(nameField);
 			nameFieldProps.label = null;
 			nameFieldProps.size = 'full';
@@ -251,6 +253,8 @@ var EditForm = React.createClass({
 				if (index === 0 && this.state.focusFirstField) {
 					props.autoFocus = true;
 				}
+				const { $any, $all, $fields } = this.props.list.can.update;
+				props.noedit = !$all && (!$any || $fields.indexOf(field.path) === -1);
 				return React.createElement(Fields[field.type], props);
 			}
 		}, this);
